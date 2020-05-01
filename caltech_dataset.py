@@ -79,7 +79,7 @@ class Caltech(VisionDataset):
         self.samples = dataset
         self.target = [sample[1] for sample in dataset]
 
-def __getitem__(self, index):
+    def __getitem__(self, index):
         '''
         __getitem__ should access an element through its index
         Args:
@@ -110,5 +110,4 @@ def __getitem__(self, index):
         The __len__ method returns the length of the dataset
         It is mandatory, as this is used by several other components
         '''
-        length = len(self.dataset) # Provide a way to get the length (number of elements) of the dataset
-        return length
+        return len(self.samples) # Provide a way to get the length (number of elements) of the dataset
