@@ -15,6 +15,11 @@ def pil_loader(path):
 
 
 def make_dataset(directory, class_to_idx):
+    filePath = "Caltech101/" + self.split + ".txt"
+    file = open(filePath, "r")
+    number_of_lines = len(file.readlines())
+    file = open(filePath, "r")
+    
     instances = []
     dataset = []
     directory = os.path.expanduser(directory)
@@ -64,9 +69,7 @@ class Caltech(VisionDataset):
           through the index
         - Labels should start from 0, so for Caltech you will have lables 0...100 (excluding the background class) 
         '''
-        classes = [d.name for d in os.scandir(root) if (d.is_dir() and d.name!="BACKGROUND_Google")]
-        classes.sort()
-        class_to_idx = {classes[i]: i for i in range(len(classes))}
+        classes, classes_to_idx = self._find_classes(self.root)
         '''
         instances = []
         dataset = []
@@ -114,6 +117,24 @@ class Caltech(VisionDataset):
         self.samples = samples
         self.target = [s[1] for s in samples]
 
+    def _find_classes(self, dir):
+        """
+        Finds the class folders in a dataset.
+
+        Args:
+            dir (string): Root directory path.
+
+        Returns:
+            tuple: (classes, class_to_idx) where classes are relative to (dir), and class_to_idx is a dictionary.
+
+        Ensures:
+            No class is a subdirectory of another.
+        """
+        classes = [d.name for d in os.scandir(root) if (d.is_dir() and d.name!="BACKGROUND_Google")]
+        classes.sort()
+        class_to_idx = {classes[i]: i for i in range(len(classes))}
+        return classes, class_to_idx    
+        
     def __getitem__(self, index):
         '''
         __getitem__ should access an element through its index
