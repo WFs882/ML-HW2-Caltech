@@ -17,30 +17,29 @@ def pil_loader(path):
 def make_dataset(directory, class_to_idx, split):
     instances = []
     dataset = []
-    #directory: Caltech101/101_ObjectCategories
+    #directory = "Caltech101/101_ObjectCategories"
     root, tail = os.path.split(directory)
     filePath = root + "/" + split + ".txt"
     file = open(filePath, "r")
     number_of_lines = len(file.readlines())
     file = open(filePath, "r")
-    
-    
-    directory = os.path.expanduser(directory)
+
+    #directory = os.path.expanduser(directory)
     for target_class in sorted(class_to_idx.keys(),key=str.lower):
         #print(target_class)
         class_index = class_to_idx[target_class]
         target_dir = os.path.join(directory, target_class)
         if not os.path.isdir(target_dir):
             continue
-        for root, _, fnames in sorted(os.walk(target_dir, followlinks=True)):
+        for root2, _, fnames in sorted(os.walk(target_dir, followlinks=False)):
             for fname in sorted(fnames):
-                head, tail = os.path.split(root)
+                head, tail = os.path.split(root2)
                 path = os.path.join(tail, fname)
                 item = path, class_index
                 instances.append(item)
 
     num_of_instances=len(instances)
-
+    
     i=0
     next=True
     while(i<num_of_instances):
@@ -56,7 +55,8 @@ def make_dataset(directory, class_to_idx, split):
             i=i+1
         else:
             i=i+1
-    return dataset         
+
+    return dataset  
 
 class Caltech(VisionDataset):
     def __init__(self, root, split='train', transform=None, target_transform=None):
@@ -73,8 +73,10 @@ class Caltech(VisionDataset):
           through the index
         - Labels should start from 0, so for Caltech you will have lables 0...100 (excluding the background class) 
         '''
-        classes, class_to_idx = self._find_classes(self.root)
-        samples = make_dataset(self.root, class_to_idx, self.split)
+        classes, class_to_idx = self._find_classes(root)
+        samples = make_dataset(root, class_to_idx, split)
+        if len(samples) == 0:
+            raise (RuntimeError("Found 0 files in subfolders of: " + self.root + "\n" + "Supported extensions are: " + ",".join(extensions)))
         self.classes = classes
         self.class_to_idx = class_to_idx
         self.samples = samples
@@ -94,7 +96,7 @@ class Caltech(VisionDataset):
             No class is a subdirectory of another.
         """
         classes = [d.name for d in os.scandir(dir) if (d.is_dir() and d.name!="BACKGROUND_Google")]
-        classes.sort()
+        classes.sort(key=str.lower)
         class_to_idx = {classes[i]: i for i in range(len(classes))}
         return classes, class_to_idx    
         
@@ -119,8 +121,8 @@ class Caltech(VisionDataset):
         # Applies preprocessing when accessing the image
         if self.transform is not None:
             image = self.transform(image)
-        if self.target_transform is not None:
-            label = self.target_transform(target)
+        #if self.target_transform is not None:
+        #    label = self.target_transform(target)
             
         return image, label
 
