@@ -14,6 +14,41 @@ def pil_loader(path):
         return img.convert('RGB')
 
 
+def make_dataset(directory, class_to_idx):
+    instances = []
+    dataset = []
+    directory = os.path.expanduser(directory)
+        for target_class in sorted(class_to_idx.keys(),key=str.lower):
+        #print(target_class)
+        class_index = class_to_idx[target_class]
+        target_dir = os.path.join(root, target_class)
+        if not os.path.isdir(target_dir):
+            continue
+        for root, _, fnames in sorted(os.walk(target_dir, followlinks=True)):
+            for fname in sorted(fnames):
+                head, tail = os.path.split(root)
+                path = os.path.join(tail, fname)
+                instances.append(item)
+
+        num_of_instances=len(instances)
+
+        i=0
+        next=True
+        while(i<num_of_instances):
+            if(next is True):
+                next = False
+                currentImage = file.readline()
+                currentImage = currentImage.replace("/", "\\").replace("\n","")
+            if(currentImage.find("Google")!=-1):
+                next = True
+            elif(currentImage == instances[i][0]):
+                dataset.append(instances[i])
+                next = True
+                i=i+1
+            else:
+                i=i+1
+   return dataset         
+    
 class Caltech(VisionDataset):
     def __init__(self, root, split='train', transform=None, target_transform=None):
         super(Caltech, self).__init__(root, transform=transform, target_transform=target_transform)
@@ -32,11 +67,10 @@ class Caltech(VisionDataset):
         classes = [d.name for d in os.scandir(root) if (d.is_dir() and d.name!="BACKGROUND_Google")]
         classes.sort()
         class_to_idx = {classes[i]: i for i in range(len(classes))}
-
+        '''
         instances = []
         dataset = []
 
-        split = 'test'
         filePath = "Caltech101/" + split + ".txt"
         file = open(filePath, "r")
         number_of_lines = len(file.readlines())
@@ -73,11 +107,12 @@ class Caltech(VisionDataset):
                 i=i+1
             else:
                 i=i+1
-        
+        '''
+        samples = make_dataset(self.root, class_to_idx)
         self.classes = classes
         self.class_to_idx = class_to_idx
-        self.samples = dataset
-        self.target = [sample[1] for sample in dataset]
+        self.samples = samples
+        self.target = [s[1] for s in samples]
 
     def __getitem__(self, index):
         '''
